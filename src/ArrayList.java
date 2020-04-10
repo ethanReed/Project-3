@@ -10,7 +10,7 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
     }
 
     /*
-     * Add an element to end of the list. If element is null,
+     * Adds an element to end of the list. If element is null,
      * it will NOT add it and return false.  Otherwise, it
      * will add it and return true. Updates isSorted to false.
      */
@@ -18,12 +18,17 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
         if (element == null) {
             return false;
         }
+        /* if the array is full, it will double the length of the original array,
+         * copying over everything from the original array to the new array,
+         * and setting the instance variable to the new array.
+         */
         else if (next == a.length) {
             int newA = a.length * 2;
             T[] b = (T[]) new Comparable[newA];
             int i = 0;
             while (i < a.length) {
                 b[i] = a[i];
+                i++;
             }
             a = b;
         }
@@ -34,24 +39,36 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
     }
 
     /*
-     *  Add an element at specific index. This method should
-     * also shift the element currently at that position (if
+     *  Adds an element at specific index and
+     * shifts the element currently at that position (if
      * any) and any subsequent elements to the right (adds
      * one to their indices). If element is null, or if index
      * index is out-of-bounds (index < 0 or index >= size_of_list),
      * it will NOT add it and return false. Otherwise it will
-     * add it and return true. See size() for the definition
-     * of size of list. Also updates isSorted variable to false.
+     * add it and return true. Also updates isSorted variable to false.
      */
     public boolean add(int index, T element) {
-        if (index < 0 || index >= a.length) {
-            int newLength = a.length * 2;
+        if (index < 0 || index >= size() || element == null) {
+            return false;
+        }
+        /* if the array is full, it will double the length of the original array,
+         * copying over everything from the original array to the new array,
+         * and setting the instance variable to the new array.
+         */
+        else if (size() == a.length) {
+            int newLength = size() * 2;
             T[] b = (T[]) new Comparable[newLength];
             int i = 0;
             while (i < a.length) {
                 b[i] = a[i];
+                i++;
             }
             a = b;
+        }
+        int i;
+        // shifts elements in the position to the right side
+        for(i = a.length - 1; i > index; i--) {
+            a[i] = a[i - 1];
         }
         a[index] = element;
         index += 1;
@@ -64,10 +81,14 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
      */
     public void clear() {
         next = 0;
+        for (int i = 0; i < a.length; i++) {
+            a[i] = null;
+        }
+        isSorted = false;
     }
 
     /*
-     * Return true if element is in the list and false
+     * Returns true if element is in the list and false
      * otherwise. If isSorted is true, uses the ordering
      * of the list to increase the efficiency of the search.
      */
@@ -82,7 +103,7 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
     }
 
     /*
-     *  Return the element at given index. If index is
+     * Returns the element at given index. If index is
      * out-of-bounds, it will return null.
      *
      */
@@ -96,7 +117,7 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
     }
 
     /*
-     * Return the first index of element in the list. If element
+     * Returns the first index of element in the list. If element
      * is null or not found in the list, return -1. If isSorted is
      * true, uses the ordering of the list to increase the efficiency
      * of the search.
@@ -131,7 +152,7 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
         int last = 0;
         int i;
         for (i = a.length - 1; i >= 0; i--) {
-            if (a[i].equals(element)) {
+            if (a[i] != null && a[i].equals(element)) {
                 return i;
             } else if (isSorted == true && a[i].compareTo(element) < 0) {
                 return -1;
@@ -141,38 +162,43 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
     }
 
     /*
-     * Replace the element at index with element and return the
+     * Replaces the element at index with element and returns the
      * element that was previously at index. If index is
      * out-of-bounds or element is null, do nothing with element
      * and return null.
      */
     public T set(int index, T element) {
-        if (index < 0 || index > a.length) {
+        if (index < 0 || index > a.length || element == null) {
             return null;
         }
         T original = a[index];
         a[index] = element;
+        isSorted = false;
         return original;
     }
 
     /*
-     * Return the number of elements in the list. For example, if
+     * Returns the number of elements in the list. For example, if
      * 4 elements added to a list, size will return 4, while the
      * last index in the list will be 3.
      */
     public int size() {
-        return a.length;
+        int i;
+        int count = 0;
+        for(i=0; i < a.length; i++) {
+            if (a[i] == null) {
+                return count;
+            }
+        count++;
+        }
+        return count;
     }
 
     /*
-     * Sort the elements of the list. If order is true, sort the
-     * list in increasing (alphabeticaly) order. If order is
-     * false, sort the list in decreasing (reverse alphabetical)
-     * order. Note: only set isSorted to true if sorted in ASCENDING
+     * Uses a bubble sort to sort the elements of the list. If order is true, sorts the
+     * list in increasing (alphabeticaly) order and sets isSorted to true. If order is
+     * false, sorts the list in decreasing (reverse alphabetical)
      * order.
-     * If isSorted is true, and the order is true, do NOT resort.
-     * Hint: Since T extends Comparable, you will find it useful
-     * to use the public int compareTo(T o) method.
      */
     public void sort(boolean order) {
        int i, j;
@@ -192,6 +218,7 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
                    }
                }
            }
+           isSorted = true;
        }
        else {
            for (i = 0; i < a.length && swapped == true; i++) {
@@ -206,15 +233,16 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
                    }
                }
            }
+           isSorted = false;
        }
    }
 
 
     /*
-     * Remove the first instance of element from the list. This
-     * method should also shifts any subsequent elements to the
+     * Removes the first instance of element from the list
+     * and also shifts any subsequent elements to the
      * left (subtracts one from their indices). If successful,
-     * return true. If element is not found in the list, return
+     * returns true. If element is not found in the list, returns
      * false.
      */
     public boolean remove(T element){
@@ -222,6 +250,11 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
         for (i = 0; i < next; i++) {
             if (a[i].equals(element)) {
                 remove(i);
+                int j;
+                for(j = a.length - 1; j < i; j--) {
+                    a[j] = a[j - 1];
+                }
+                isSorted = false;
                 return true;
             }
         }
@@ -229,37 +262,33 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
     }
 
     /*
-     * Remove whatever is at index index in the list and return
-     * it. If index is out-of-bounds, return null. Shift the
+     * Remove whatever is at index index in the list and returns
+     * it. If index is out-of-bounds, returns null. Shifts the
      * indices as in the other remove.
      */
     public T remove(int index) {
-        if (index < a.length || index > a.length) {
+        if (index < 0 || index >= a.length) {
             return null;
         }
         else {
             T holder = a[index];
-            for (int i = index; i < size() - 1; i++) {
+            for (int i = index; i < a.length - 1; i++) {
                 a[i] = a[i+1];
             }
             a[a.length-1] = null;
+            isSorted = false;
             return holder;
         }
     }
 
     /*
-     * Note that this method exists for debugging purposes.
-     * It calls the toString method of the underlying elements in
-     * the list in order to create a String representation of the list.
-     * The format of the toString should appear as follows:
+     * The format of the toString will appear as follows:
      * Element1
      * Element2
      * .
      * .
      * .
      * Elementn
-     * Watch out for extra spaces or carriage returns. Each element
-     * should be printed on its own line.
      */
     public String toString() {
         String output = "";
