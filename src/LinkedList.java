@@ -1,14 +1,17 @@
 //REEDx500 Johal004
 
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+
 public class LinkedList<T extends Comparable<T>> implements List<T> {
 
     //T is generic type
 
-    private Node head;
+    private Node <T> head;
     private boolean isSorted;
     public LinkedList(){
 
-        Node head = null;
+        head = new Node <T> ();
         isSorted = true;
     }
     public boolean add(T element){
@@ -18,29 +21,19 @@ public class LinkedList<T extends Comparable<T>> implements List<T> {
          * will add it and return true. Updates isSorted to false.
          */
 
-        if (element == null){
-            isSorted = false;
+        if (element == (null)){
             return false;
         }
-        if (head == null){
-            head = new Node(element, null);
-            isSorted = false;
-            return true;
-        }
-        Node updatedHead = head.getNext();
-        Node trailer = updatedHead;
+        Node updatedHead = head;
 
-        Node x = new Node(element, null);
-        while(updatedHead != null){
-            trailer = updatedHead;
+        Node <T> x = new Node(element, null);
+        while(updatedHead.getNext() != null){
             updatedHead = updatedHead.getNext();
-
-        }
-        trailer.setNext(x);
+            }
+        updatedHead.setNext(x);
         isSorted = false;
         return true;
-    }
-
+        }
 
     public boolean add(int index, T element) {
         /*
@@ -53,36 +46,38 @@ public class LinkedList<T extends Comparable<T>> implements List<T> {
          * add it and return true. See size() for the definition
          * of size of list. Also updates isSorted variable to false.
          */
-        if(element == null || index > this.size() || index < 0){
+        if (element == null || index >= this.size() || index < 0 || head.getNext() == null) {
             return false;
-        }else if (index == 0){
+        } else if (index == 0) {
             //add node at head
-            Node start = new Node(element, head);
-            head = start;
+            Node y = new Node(element, head.getNext());
+            head.setNext(y);
+            isSorted = false;
             return true;
+        }else {
+            int count = 0;
+            Node current = head.getNext();
+            Node trailer = current;
+            while (count != index) {
+                trailer = current;
+                current = current.getNext();
+                count++;
+            }
+            if (count == index) {
+                Node position = new <T>Node(element, current);
+                trailer.setNext(position);
+                isSorted = false;
+                return true;
+            }
         }
-        int count = 0;
-        Node current = head.getNext();
-        Node trailer = head;
-
-        while (count != index){
-            trailer = current;
-            current = current.getNext();
-            count ++;
-        }
-        Node position = new Node(element, current);
-        trailer.setNext(position);
-        return true;
+        return false;
     }
     public void clear() {
 
         /*
-         * Return true if element is in the list and false
-         * otherwise. If isSorted is true, uses the ordering
-         * of the list to increase the efficiency of the search.
+         * Remove all elements from the list.
          */
-
-        head = null;
+        head.setNext(null);
         isSorted = true;
 
     }
@@ -95,42 +90,50 @@ public class LinkedList<T extends Comparable<T>> implements List<T> {
          */
 
         if (isSorted == true) {
-            Node updatedHead = head;
-            while (element.equals(updatedHead.getData())) {
-                if (element == updatedHead.getData()) {
+            Node updatedHead = head.getNext();
+            while (updatedHead != null) {
+                if (element.equals(updatedHead.getData())) {
                     return true;
                 }
                 updatedHead = updatedHead.getNext();
             }
         } else {
-            Node updatedHead = head;
-            int count = 0;
+            Node updatedHead = head.getNext();
             while (updatedHead != null) {
-                if (updatedHead.getData() == element) {
+                if (updatedHead.getData().equals(element)) {
                     return true;
                 } else {
                     updatedHead = updatedHead.getNext();
                 }
-                return false;
             }
         }
         return false;
     }
 
     public T get(int index) {
-        //use counter if counter
-        if (index > this.size() || index < 0) {
+        /*
+         *  Return the element at given index. If index is
+         * out-of-bounds, it will return null.
+         *
+         */
+        if (index >= this.size() || index < 0 || head.getNext() == null) {
             return null;
-        } else {
-            Node updatedHead = head;
+        }else if (index == 0 && head.getNext() != null){
+            return head.getNext().getData();
+        }else{
+            Node updatedHead = head.getNext();
             int count = 0;
             while (count != index) {
-                count++;
                 updatedHead = updatedHead.getNext();
+                count++;
+                }
+            if(count == index){
+
+                T data = (T) updatedHead.getData();
+                return data;
             }
-            T value = (T) updatedHead.getData();
-            return value;
         }
+        return null;
     }
 
     public int indexOf(T element) {
@@ -143,12 +146,23 @@ public class LinkedList<T extends Comparable<T>> implements List<T> {
 
         if (head == null) {
             return -1;
-        } else {
-            Node updatedHead = head;
+        } else if(isSorted == true){
+            Node updatedHeadSort = head;
+            int countForSorted = 0;
+            while(updatedHeadSort.getNext() != null){
+                if(updatedHeadSort.getData().equals(element)){
+                    return countForSorted;
+                }else{
+                    updatedHeadSort = updatedHeadSort.getNext();
+                    countForSorted++;
+                }
+            }
+        }else{
+            Node updatedHead = head.getNext();
             int count = 0;
 
             while (updatedHead != null) {
-                if (updatedHead.getData() == element) {
+                if (updatedHead.getData().equals(element)) {
                     return count;
                 } else {
                     updatedHead = updatedHead.getNext();
@@ -159,7 +173,7 @@ public class LinkedList<T extends Comparable<T>> implements List<T> {
         return -1;
     }
     public boolean isEmpty(){
-            if (head != null){
+            if (head.getNext() == null){
                 return true;
             }else{
                 return false;
@@ -173,23 +187,45 @@ public class LinkedList<T extends Comparable<T>> implements List<T> {
          */
 
         //do it for sorted list
-
-        if (head == null) {
+        if(element == null){
             return -1;
-        } else {
-            Node updatedHead = head;
+        }
+        if(isSorted == true && head.getNext() != null){
+            Node updatedHead = head.getNext();
             int count = 0;
-            int lastIndex = 0;
-            while (updatedHead != null) {
-                if (updatedHead.getData() == element) {
-                    lastIndex = count;
-                } else {
-                    updatedHead = updatedHead.getNext();
+            while(updatedHead == null) {
+                if (updatedHead.getData().compareTo(element) > 0) {
+                    return -1;
+                }else if(updatedHead.getData().compareTo(element) == 0){
+                    return count;
+                }else{
+                    updatedHead.getNext();
                     count++;
                 }
             }
         }
-        return -1;
+        if (head.getNext() == null) {
+            return 0;
+        } else {
+            Node updatedHead = head.getNext();
+            int count = 0;
+            int lastIndex = 0;
+            while (updatedHead != null) {
+                if (updatedHead.getData().compareTo(element) == 0) {
+                    lastIndex = count;
+                    updatedHead = updatedHead.getNext();
+                    count++;
+                }else{
+                    updatedHead = updatedHead.getNext();
+                    count++;
+                }
+            }
+            if(lastIndex == 0){
+                return -1;
+            }else {
+                return lastIndex;
+            }
+        }
     }
 
     public T set(int index, T element) {
@@ -199,11 +235,17 @@ public class LinkedList<T extends Comparable<T>> implements List<T> {
              * out-of-bounds or element is null, do nothing with element
              * and return null.
              */
-            if(head == null || this.size() < index || index < 0){
+            if(head.getNext() == null || index >= this.size() || element == null || index < 0){
                 return null;
+            }else if(index == 0){
+                Node swappedNode = head.getNext();
+                T previousData = (T) swappedNode.getData();
+                swappedNode.setData(element);
+                return previousData;
+
             }else{
-                int count = 0;
-                Node updatedHead = head;
+                int count = 1;
+                Node updatedHead = head.getNext().getNext();
 
                 while (updatedHead != null){
                     if(count == index){
@@ -221,24 +263,24 @@ public class LinkedList<T extends Comparable<T>> implements List<T> {
     }
 
 
-    public int size(){
+    public int size() {
         /*
          * Return the number of elements in the list. For example, if
          * 4 elements added to a list, size will return 4, while the
          * last index in the list will be 3.
          */
-        Node updatedHead = head.getNext();
-        Node trailer = updatedHead;
+        if (head.getNext() == null) {
+            return 0;
+        } else {
+            Node updatedHead = head.getNext();
+            int size = 0;
 
-        int count = 0;
-
-        while(updatedHead != null){
-            trailer = updatedHead;
-            updatedHead = updatedHead.getNext();
-            count ++;
+            while (updatedHead != null) {
+                updatedHead = updatedHead.getNext();
+                size++;
+            }
+            return size;
         }
-
-        return count;
     }
 
 
@@ -256,52 +298,46 @@ public class LinkedList<T extends Comparable<T>> implements List<T> {
          */
 
         int sizeOfLL = this.size();
-        Node current = head;
-        Node trailer = head;
+        Node current = head.getNext();
+        Node trailer = head.getNext();
         Node temp;
 
         if (order == true && isSorted != true) {//sort  alphabetically
-            for(int i = 0; i < sizeOfLL; i++){
-                for(int j = 0; j < sizeOfLL; j++){
-                    if(current.getNext() != null){
-                        if (current.getData().compareTo(trailer.getData()) > 1){
-                            T currentData = (T) current.getData();
-                            T trailerData = (T) trailer.getData();
+            while (current != null) {
+                while (trailer != null) {
+                    if (current.getData().compareTo(trailer.getData()) > 0) {
+                        T currentData = (T) current.getData();
+                        T trailerData = (T) trailer.getData();
 
-                            current.setData(trailerData);
-                            trailer.setData(currentData);
-
-                            trailer = current;
-                            current = current.getNext();
-                        }else{
-                            trailer = current;
-                            current = current.getNext();
-                        }
+                        current.setData(trailerData);
+                        trailer.setData(currentData);
+                    } else {
+                        trailer = trailer.getNext();
                     }
                 }
+                current = current.getNext();
+                trailer = current;
             }
-        } else {// reverse sort alphabetically
-            for(int i = 0; i < sizeOfLL; i++){
+        } else if(order != true || isSorted != true) {// reverse sort alphabetically
+           /* for(int i = 0; i < sizeOfLL; i++){
                 for(int j = 0; j < sizeOfLL; j++){
-                    if(current.getNext() != null){
-                        if (current.getData().compareTo(trailer.getData()) < 1){
-                            T currentData = (T) current.getData();
-                            T trailerData = (T) trailer.getData();
+                    if(current.getNext() != null){*/
+            //do while loops
+            while (current != null) {
+                while (trailer != null) {
+                    if (current.getData().compareTo(trailer.getData()) < 0) {
+                        T currentData = (T) current.getData();
+                        T trailerData = (T) trailer.getData();
 
-                            current.setData(trailerData);
-                            trailer.setData(currentData);
-
-                            trailer = current;
-                            current = current.getNext();
-                        }else{
-                            trailer = current;
-                            current = current.getNext();
-                        }
+                        current.setData(trailerData);
+                        trailer.setData(currentData);
+                    } else {
+                        trailer = trailer.getNext();
                     }
                 }
+                current = current.getNext();
+                trailer = current;
             }
-
-            int count = 0;
         }
     }
     public boolean remove(T element) {
@@ -312,21 +348,22 @@ public class LinkedList<T extends Comparable<T>> implements List<T> {
          * return true. If element is not found in the list, return
          * false.
          */
-        if (head == null){
+        if (head.getNext() == null){
             return false;
         }
-        int count = 0;
-        Node updatedHead = head;
+        Node updatedHead = head.getNext();
         Node trailer = head;
-        while(count  < this.size()){
-            if(updatedHead.getData().equals(element)){
-                Node nextVal = updatedHead.getNext();
-                trailer.setNext(nextVal);
+        while(updatedHead != null){
+            if(updatedHead.getNext() == null && updatedHead.getData().equals(element)){
+                updatedHead = null;
+                trailer.setNext(null);
+                return true;
+            }else if(updatedHead.getData().equals(element)){
+                trailer.setNext(updatedHead.getNext());
                 return true;
             }else{
-                trailer = updatedHead;
+                trailer = trailer.getNext();
                 updatedHead = updatedHead.getNext();
-                count++;
             }
         }
 
@@ -338,33 +375,41 @@ public class LinkedList<T extends Comparable<T>> implements List<T> {
          * it. If index is out-of-bounds, return null. Shift the
          * indices as in the other remove.
          */
-        if(head == null ||index > this.size()){
+        if(head.getNext() == null ||index >= this.size() || index < 0){
             return null;
-        }
+        }else if(index == 0) {
+            T dataOfIndex1 = (T) head.getNext().getData();
+            head.setNext(head.getNext().getNext());
+            return dataOfIndex1;
+        }else {
+            Node updatedHead = head.getNext();
+            Node trailer = head;
+            int count = 0;
+            while (count != index) {
+                trailer = trailer.getNext();
+                updatedHead = updatedHead.getNext();
+                count++;
+            }
+                if (index == this.size() && count == index) {
+                    T lastIndex = (T) updatedHead.getData();
+                    trailer.setNext(null);
+                    return lastIndex;
 
-        Node updatedHead = head;
-        Node trailer = head;
-        int count = 0;
-        while (count != index){
-            trailer = updatedHead;
-            updatedHead = updatedHead.getNext();
-            count++;
-
-        }if(count == index){
-            T data = (T) updatedHead.getData();
-            Node newPTR = updatedHead.getNext();
-            trailer.setNext(newPTR);
-            return data;
-        }
+                } else if (count == index) {
+                    Node newPTR = updatedHead.getNext();
+                    trailer.setNext(newPTR);
+                    return (T) updatedHead.getData();
+                }
+            }
         return null;
     }
 
     public String toString(){
             String result = "";
-            Node currNode = head;
+            Node currNode = head.getNext();
             int currIndex = 0;
             while( currNode != null ){
-                result += currNode;
+                result += currNode.getData();
                 currNode = currNode.getNext();
                 currIndex++;
 
@@ -372,5 +417,8 @@ public class LinkedList<T extends Comparable<T>> implements List<T> {
                 if( currNode != null ){ result += ", "; }
             }
             return result;
+    }
+
+    public static void main(String[] args) {
     }
 }
