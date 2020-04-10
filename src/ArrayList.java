@@ -24,6 +24,7 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
             int i = 0;
             while (i < a.length) {
                 b[i] = a[i];
+                i++;
             }
             a = b;
         }
@@ -44,14 +45,22 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
      * of size of list. Also updates isSorted variable to false.
      */
     public boolean add(int index, T element) {
-        if (index < 0 || index >= a.length) {
-            int newLength = a.length * 2;
+        if (index < 0 || index >= size() || element == null) {
+            return false;
+        }
+        else if (size() == a.length) {
+            int newLength = size() * 2;
             T[] b = (T[]) new Comparable[newLength];
             int i = 0;
             while (i < a.length) {
                 b[i] = a[i];
+                i++;
             }
             a = b;
+        }
+        int i;
+        for(i = a.length - 1; i > index; i--) {
+            a[i] = a[i - 1];
         }
         a[index] = element;
         index += 1;
@@ -64,6 +73,10 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
      */
     public void clear() {
         next = 0;
+        for (int i = 0; i < a.length; i++) {
+            a[i] = null;
+        }
+        isSorted = false;
     }
 
     /*
@@ -131,7 +144,7 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
         int last = 0;
         int i;
         for (i = a.length - 1; i >= 0; i--) {
-            if (a[i].equals(element)) {
+            if (a[i] != null && a[i].equals(element)) {
                 return i;
             } else if (isSorted == true && a[i].compareTo(element) < 0) {
                 return -1;
@@ -147,11 +160,12 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
      * and return null.
      */
     public T set(int index, T element) {
-        if (index < 0 || index > a.length) {
+        if (index < 0 || index > a.length || element == null) {
             return null;
         }
         T original = a[index];
         a[index] = element;
+        isSorted = false;
         return original;
     }
 
@@ -161,7 +175,15 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
      * last index in the list will be 3.
      */
     public int size() {
-        return a.length;
+        int i;
+        int count = 0;
+        for(i=0; i < a.length; i++) {
+            if (a[i] == null) {
+                return count;
+            }
+        count++;
+        }
+        return count;
     }
 
     /*
@@ -192,6 +214,7 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
                    }
                }
            }
+           isSorted = true;
        }
        else {
            for (i = 0; i < a.length && swapped == true; i++) {
@@ -206,6 +229,7 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
                    }
                }
            }
+           isSorted = false;
        }
    }
 
@@ -222,6 +246,11 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
         for (i = 0; i < next; i++) {
             if (a[i].equals(element)) {
                 remove(i);
+                int j;
+                for(j = a.length - 1; j < i; j--) {
+                    a[j] = a[j - 1];
+                }
+                isSorted = false;
                 return true;
             }
         }
@@ -234,15 +263,16 @@ public class ArrayList<T extends Comparable<T>> implements List<T> {
      * indices as in the other remove.
      */
     public T remove(int index) {
-        if (index < a.length || index > a.length) {
+        if (index < 0 || index >= a.length) {
             return null;
         }
         else {
             T holder = a[index];
-            for (int i = index; i < size() - 1; i++) {
+            for (int i = index; i < a.length - 1; i++) {
                 a[i] = a[i+1];
             }
             a[a.length-1] = null;
+            isSorted = false;
             return holder;
         }
     }
